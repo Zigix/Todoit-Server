@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <h3>Hello <span th:text="${name}"></span>!</h3>
+    Please confirm your account by following link below
+    <a th:href="${confirmationLink}" th:text="${confirmationLink}"></a>
+</body>
+</html>

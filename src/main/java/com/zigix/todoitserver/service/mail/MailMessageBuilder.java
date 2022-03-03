@@ -1,9 +1,11 @@
 package com.zigix.todoitserver.service.mail;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+@Component
 @RequiredArgsConstructor
 public class MailMessageBuilder {
     private final TemplateEngine engine;

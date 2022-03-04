@@ -40,11 +40,6 @@ class AuthServiceImplTest {
     PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Test
-    @Disabled
-    void shouldSignUpNewUser() {
-    }
-
-    @Test
     @DisplayName("Should throw PasswordsDoesNotMatchException when trying to sign up new user")
     void shouldThrowPasswordsDoesNotMatchException() {
         // given

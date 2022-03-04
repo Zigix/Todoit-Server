@@ -1,5 +1,6 @@
 package com.zigix.todoitserver.service;
 
+import com.zigix.todoitserver.domain.exception.VerificationTokenNotFoundException;
 import com.zigix.todoitserver.domain.model.User;
 import com.zigix.todoitserver.domain.model.VerificationToken;
 import com.zigix.todoitserver.repository.VerificationTokenRepository;
@@ -21,5 +22,13 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
         verificationTokenRepository.save(verificationToken);
 
         return verificationToken.getToken();
+    }
+
+    @Override
+    public VerificationToken getByTokenValue(String tokenValue) {
+        return verificationTokenRepository.findByToken(tokenValue)
+                .orElseThrow(() ->
+                        new VerificationTokenNotFoundException(
+                                String.format("Verification token with value %s not found", tokenValue)));
     }
 }

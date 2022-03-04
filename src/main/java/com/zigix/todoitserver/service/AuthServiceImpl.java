@@ -5,6 +5,7 @@ import com.zigix.todoitserver.domain.exception.EmailExistsException;
 import com.zigix.todoitserver.domain.exception.PasswordsDoesNotMatchException;
 import com.zigix.todoitserver.domain.exception.UsernameExistsException;
 import com.zigix.todoitserver.domain.model.User;
+import com.zigix.todoitserver.domain.model.VerificationToken;
 import com.zigix.todoitserver.repository.UserRepository;
 import com.zigix.todoitserver.repository.VerificationTokenRepository;
 import com.zigix.todoitserver.service.mail.MailContent;
@@ -48,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
+
     private void validateRegistrationRequest(final RegisterUserRequest request) {
         if (!request.getPassword().equals(request.getRePassword())) {
             throw new PasswordsDoesNotMatchException("Passwords doesn't match");
@@ -69,5 +71,14 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .enabled(false)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void verifyToken(String tokenValue) {
+        VerificationToken verificationToken =
+                verificationTokenService.getByTokenValue(tokenValue);
+        User tokenOwner = verificationToken.getOwner();
+        tokenOwner.setEnabled(true);
     }
 }

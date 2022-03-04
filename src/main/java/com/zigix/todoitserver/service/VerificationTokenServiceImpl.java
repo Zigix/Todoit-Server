@@ -15,12 +15,11 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
 
     @Override
     public String generateToken(User user) {
-        String generatedTokenValue = UUID.randomUUID().toString();
         VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(generatedTokenValue);
+        verificationToken.setToken(UUID.randomUUID().toString());
         verificationToken.setOwner(user);
         verificationTokenRepository.save(verificationToken);
 
-        return generatedTokenValue;
+        return verificationToken.getToken();
     }
 }

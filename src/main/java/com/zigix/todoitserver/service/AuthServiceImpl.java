@@ -6,24 +6,46 @@ import com.zigix.todoitserver.domain.exception.PasswordsDoesNotMatchException;
 import com.zigix.todoitserver.domain.exception.UsernameExistsException;
 import com.zigix.todoitserver.domain.model.User;
 import com.zigix.todoitserver.repository.UserRepository;
+import com.zigix.todoitserver.repository.VerificationTokenRepository;
+import com.zigix.todoitserver.service.mail.MailContent;
+import com.zigix.todoitserver.service.mail.MailMessageBuilder;
+import com.zigix.todoitserver.service.mail.MailService;
+import com.zigix.todoitserver.util.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 
+import static com.zigix.todoitserver.util.Constants.CONFIRMATION_EMAIL_SUBJECT;
+import static com.zigix.todoitserver.util.Constants.CONFIRMATION_TOKEN_LINK_PREFIX;
+
 @Service
 @RequiredArgsConstructor
+@Validated
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
+    private final MailMessageBuilder mailMessageBuilder;
+    private final VerificationTokenService verificationTokenService;
 
     @Override
     @Transactional
-    public void signUp(@Valid RegisterUserRequest request) {
+    public void signUp(RegisterUserRequest request) {
         validateRegistrationRequest(request);
-        userRepository.save(mapToUser(request));
+        User user = mapToUser(request);
+        userRepository.save(user);
+
+        String tokenValue = verificationTokenService.generateToken(user);
+        String confirmationLink = CONFIRMATION_TOKEN_LINK_PREFIX + tokenValue;
+        mailService.sendMail(new MailContent(
+                user.getEmail(),
+                CONFIRMATION_EMAIL_SUBJECT,
+                mailMessageBuilder.getRegistrationMailContent(user.getUsername(), confirmationLink))
+        );
     }
 
     private void validateRegistrationRequest(final RegisterUserRequest request) {

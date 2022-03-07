@@ -49,7 +49,7 @@ class AuthServiceImplTest {
                 "qwertyuiop",
                 "12345678"
         );
-        AuthService underTest = new AuthServiceImpl(null, null, null, null, null);
+        AuthService underTest = new AuthServiceImpl(null, null, null, null, null, null, null);
 
         // when
         // then
@@ -71,7 +71,7 @@ class AuthServiceImplTest {
         UserRepository mockUserRepository = mock(UserRepository.class);
         given(mockUserRepository.existsByUsername(anyString()))
                 .willReturn(true);
-        AuthService underTest = new AuthServiceImpl(mockUserRepository, null, null, null, null);
+        AuthService underTest = new AuthServiceImpl(mockUserRepository, null, null, null, null, null, null);
         // when
         // then
         assertThatThrownBy(() -> underTest.signUp(request))
@@ -94,7 +94,7 @@ class AuthServiceImplTest {
                 .willReturn(false);
         given(mockUserRepository.existsByEmail(anyString()))
                 .willReturn(true);
-        AuthService underTest = new AuthServiceImpl(mockUserRepository, null, null, null, null);
+        AuthService underTest = new AuthServiceImpl(mockUserRepository, null, null, null, null, null, null);
         // when
         // then
         assertThatThrownBy(() -> underTest.signUp(request))
@@ -122,7 +122,9 @@ class AuthServiceImplTest {
                 passwordEncoder,
                 mockMailService,
                 mockMailMessageBuilder,
-                mockVerificationTokenService
+                mockVerificationTokenService,
+                null,
+                null
         );
 
         given(mockVerificationTokenService.generateToken(any()))

@@ -10,8 +10,8 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequest {
-    @NotBlank
+    @NotBlank(message = "Username field cannot be blank")
     private String username;
-    @NotBlank
+    @NotBlank(message = "Password field cannot be blank")
     private String password;
 }

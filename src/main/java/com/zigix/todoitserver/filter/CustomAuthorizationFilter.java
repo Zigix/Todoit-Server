@@ -1,10 +1,9 @@
-package com.zigix.todoitserver.config.jwt;
+package com.zigix.todoitserver.filter;
 
+import com.zigix.todoitserver.config.jwt.JwtTokenUtil;
 import com.zigix.todoitserver.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
@@ -15,9 +14,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 
 @RequiredArgsConstructor
 public class CustomAuthorizationFilter extends OncePerRequestFilter {

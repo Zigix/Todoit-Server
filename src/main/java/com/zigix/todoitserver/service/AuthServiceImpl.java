@@ -102,28 +102,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthenticationResponse login(LoginRequest request) {
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User loggedUser = getLoggedUser();
-        String accessToken = jwtTokenUtil.generateAccessToken(loggedUser);
-        String refreshToken = jwtTokenUtil.generateRefreshToken(loggedUser);
-        UserView userView = UserView.builder()
-                .id(loggedUser.getId())
-                .email(loggedUser.getEmail())
-                .username(loggedUser.getUsername())
-                .createdDate(loggedUser.getCreatedDate())
-                .lastModifiedDate(loggedUser.getLastModifiedDate())
-                .enabled(loggedUser.isEnabled())
-                .build();
-        AccessTokensResponse tokens = new AccessTokensResponse(accessToken, refreshToken);
-        return new AuthenticationResponse(userView, tokens);
-    }
-
-    @Override
-    @Transactional
     public AccessTokensResponse refreshToken(HttpServletRequest request) {
             String refreshToken = getRefreshTokenFromRequest(request);
             jwtTokenUtil.validateJwt(refreshToken);

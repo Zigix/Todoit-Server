@@ -32,11 +32,6 @@ public class AuthController {
         return ResponseEntity.ok("Account activated");
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
-    }
-
     @GetMapping("/refresh-token")
     public ResponseEntity<AccessTokensResponse> refreshToken(HttpServletRequest request) {
         return ResponseEntity.ok(authService.refreshToken(request));

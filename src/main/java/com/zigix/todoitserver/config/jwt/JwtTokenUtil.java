@@ -10,10 +10,15 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Date;
 
 @Component
 public class JwtTokenUtil {
+    public static final int ACCESS_TOKEN_EXPIRATION_TIME_DURATION = 10;
+    public static final TemporalUnit ACCESS_TOKEN_EXPIRATION_TIME_UNIT = ChronoUnit.MINUTES;
+    public static final String ACCESS_TOKEN_CLAIM_NAME_FOR_ROLES = "roles";
+
     private final Algorithm algorithm = Algorithm.HMAC512("secret");
     private final JWTVerifier verifier = JWT.require(algorithm).build();
 
@@ -21,8 +26,11 @@ public class JwtTokenUtil {
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withIssuedAt(Date.from(Instant.now()))
-                .withExpiresAt(Date.from(Instant.now().plus(1, ChronoUnit.MINUTES)))
-                .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .withExpiresAt(Date.from(Instant.now().plus(
+                        ACCESS_TOKEN_EXPIRATION_TIME_DURATION,
+                        ACCESS_TOKEN_EXPIRATION_TIME_UNIT)))
+                .withClaim(ACCESS_TOKEN_CLAIM_NAME_FOR_ROLES,
+                        user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
                 .withClaim("TokenType", "access token")
                 .sign(algorithm);
     }

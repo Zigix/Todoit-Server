@@ -1,7 +1,8 @@
 package com.zigix.todoitserver.service;
 
 import com.zigix.todoitserver.config.jwt.JwtTokenUtil;
-import com.zigix.todoitserver.domain.dto.*;
+import com.zigix.todoitserver.domain.dto.AccessTokensResponse;
+import com.zigix.todoitserver.domain.dto.RegisterUserRequest;
 import com.zigix.todoitserver.domain.exception.EmailExistsException;
 import com.zigix.todoitserver.domain.exception.PasswordsDoesNotMatchException;
 import com.zigix.todoitserver.domain.exception.UsernameExistsException;
@@ -12,11 +13,7 @@ import com.zigix.todoitserver.service.mail.MailContent;
 import com.zigix.todoitserver.service.mail.MailMessageBuilder;
 import com.zigix.todoitserver.service.mail.MailService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpRequest;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,17 +21,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MissingRequestHeaderException;
 
 import javax.servlet.http.HttpServletRequest;
-
-import static com.zigix.todoitserver.util.Constants.CONFIRMATION_EMAIL_SUBJECT;
-import static com.zigix.todoitserver.util.Constants.CONFIRMATION_TOKEN_LINK_PREFIX;
 
 @Service
 @RequiredArgsConstructor
 @Validated
 public class AuthServiceImpl implements AuthService {
+    public static final String CONFIRMATION_TOKEN_LINK_PREFIX = "http://localhost:8080/api/v1/auth/verify?token=";
+    public static final String CONFIRMATION_EMAIL_SUBJECT = "Confirm your account";
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;

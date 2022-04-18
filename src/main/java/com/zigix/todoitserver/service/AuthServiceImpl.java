@@ -15,6 +15,7 @@ import com.zigix.todoitserver.service.mail.MailContent;
 import com.zigix.todoitserver.service.mail.MailMessageBuilder;
 import com.zigix.todoitserver.service.mail.MailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,10 @@ import javax.servlet.http.HttpServletRequest;
 public class AuthServiceImpl implements AuthService {
     public static final String CONFIRMATION_TOKEN_LINK_PREFIX = "http://localhost:8080/api/v1/auth/verify?token=";
     public static final String CONFIRMATION_EMAIL_SUBJECT = "Confirm your account";
+
+    public static final String BEARER_PREFIX = "Bearer ";
+
+
 
     private final UserRepository userRepository;
     private final MailService mailService;
@@ -103,9 +108,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String getRefreshTokenFromRequest(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
-            return header.substring("Bearer ".length());
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (StringUtils.hasText(header) && header.startsWith(BEARER_PREFIX)) {
+            return header.substring(BEARER_PREFIX.length());
         }
         return "";
     }

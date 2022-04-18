@@ -3,6 +3,7 @@ package com.zigix.todoitserver.filter;
 import com.zigix.todoitserver.config.jwt.JwtTokenUtil;
 import com.zigix.todoitserver.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +18,7 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
+    public static final String BEARER_PREFIX = "Bearer ";
     private final JwtTokenUtil jwtTokenUtil;
     private final UserService userService;
 
@@ -24,8 +26,10 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String accessToken = extractAccessToken(request);
-        if (StringUtils.hasText(accessToken) && jwtTokenUtil.validateJwt(accessToken)) {
+        String accessToken = getAccessTokenFromRequest(request);
+        if (StringUtils.hasText(accessToken) &&
+                jwtTokenUtil.validateJwt(accessToken) &&
+                isAccessTokenType(accessToken)) {
             String username = jwtTokenUtil.getUsername(accessToken);
             UserDetails userDetails = userService.loadUserByUsername(username);
 
@@ -37,11 +41,15 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String extractAccessToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
-            return header.substring("Bearer ".length());
+    private String getAccessTokenFromRequest(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (StringUtils.hasText(header) && header.startsWith(BEARER_PREFIX)) {
+            return header.substring(BEARER_PREFIX.length());
         }
         return null;
+    }
+
+    private boolean isAccessTokenType(String token) {
+        return jwtTokenUtil.getTokenType(token).equals(JwtTokenUtil.ACCESS_TOKEN_NAME);
     }
 }

@@ -2,13 +2,12 @@ package com.zigix.todoitserver.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zigix.todoitserver.config.jwt.JwtTokenUtil;
-import com.zigix.todoitserver.domain.mapper.UserMapper;
 import com.zigix.todoitserver.domain.dto.AccessTokensResponse;
 import com.zigix.todoitserver.domain.dto.AuthenticationResponse;
 import com.zigix.todoitserver.domain.dto.LoginRequest;
+import com.zigix.todoitserver.domain.mapper.UserMapper;
 import com.zigix.todoitserver.domain.model.User;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

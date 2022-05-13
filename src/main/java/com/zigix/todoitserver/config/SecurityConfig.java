@@ -1,10 +1,10 @@
 package com.zigix.todoitserver.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zigix.todoitserver.filter.CustomAuthenticationFilter;
-import com.zigix.todoitserver.filter.CustomAuthorizationFilter;
 import com.zigix.todoitserver.config.jwt.JwtTokenUtil;
 import com.zigix.todoitserver.domain.mapper.UserMapper;
+import com.zigix.todoitserver.filter.CustomAuthenticationFilter;
+import com.zigix.todoitserver.filter.CustomAuthorizationFilter;
 import com.zigix.todoitserver.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +18,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import javax.validation.Validator;
+
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -30,6 +32,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtTokenUtil jwtTokenUtil;
     private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
+    private final Validator validator;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -43,7 +46,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 authenticationManagerBean(),
                 jwtTokenUtil,
                 userMapper,
-                objectMapper
+                objectMapper,
+                validator
         );
         customAuthenticationFilter.setFilterProcessesUrl("/api/v1/auth/login");
 

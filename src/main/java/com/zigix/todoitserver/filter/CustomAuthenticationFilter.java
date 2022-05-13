@@ -13,14 +13,17 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 import java.io.IOException;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
@@ -28,13 +31,15 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     private final JwtTokenUtil jwtTokenUtil;
     private final UserMapper userMapper;
     private final ObjectMapper objectMapper;
+    private final Validator validator;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
         UsernamePasswordAuthenticationToken authenticationToken = null;
         try {
-            final LoginRequest loginRequest = objectMapper.readValue(request.getInputStream(), LoginRequest.class);
+            final LoginRequest loginRequest = getLoginRequestFromRequest(request);
+            validateLoginRequest(loginRequest);
 
             authenticationToken = new UsernamePasswordAuthenticationToken(
                     loginRequest.getUsername(),
@@ -46,18 +51,23 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         return authenticationManager.authenticate(authenticationToken);
     }
 
+    private LoginRequest getLoginRequestFromRequest(HttpServletRequest request) throws IOException {
+        return objectMapper.readValue(request.getInputStream(), LoginRequest.class);
+    }
+
+    private void validateLoginRequest(LoginRequest loginRequest) {
+        Set<ConstraintViolation<LoginRequest>> constraints = validator.validate(loginRequest);
+        if (!constraints.isEmpty()) {
+            throw new ConstraintViolationException(constraints);
+        }
+    }
+
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authentication) throws IOException, ServletException {
         User user = (User) authentication.getPrincipal();
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                user,
-                null,
-                user.getAuthorities()
-        );
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         String accessToken = jwtTokenUtil.generateAccessToken(user);
         String refreshToken = jwtTokenUtil.generateRefreshToken(user);
         AuthenticationResponse authenticationResponse = new AuthenticationResponse(
@@ -76,3 +86,4 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         objectMapper.writeValue(response.getOutputStream(), failed.getMessage());
     }
 }
+

@@ -27,9 +27,8 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String accessToken = getAccessTokenFromRequest(request);
-        if (StringUtils.hasText(accessToken) &&
-                jwtTokenUtil.validateJwt(accessToken) &&
-                isAccessTokenType(accessToken)) {
+        jwtTokenUtil.validateJwt(accessToken);
+        if (jwtTokenUtil.getTokenType(accessToken).equals(JwtTokenUtil.ACCESS_TOKEN_NAME)) {
             String username = jwtTokenUtil.getUsername(accessToken);
             UserDetails userDetails = userService.loadUserByUsername(username);
 
@@ -46,10 +45,12 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(header) && header.startsWith(BEARER_PREFIX)) {
             return header.substring(BEARER_PREFIX.length());
         }
-        return null;
+        return "";
     }
 
-    private boolean isAccessTokenType(String token) {
-        return jwtTokenUtil.getTokenType(token).equals(JwtTokenUtil.ACCESS_TOKEN_NAME);
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path != null && path.startsWith("/api/v1/auth");
     }
 }

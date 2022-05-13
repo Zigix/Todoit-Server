@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterUserRequest {
-    @Email
+    @Email(message = "Invalid email format")
     private String email;
 
     @NotBlank(message = "Username may not be blank")

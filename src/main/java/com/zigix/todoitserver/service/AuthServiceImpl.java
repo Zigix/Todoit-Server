@@ -3,10 +3,7 @@ package com.zigix.todoitserver.service;
 import com.zigix.todoitserver.config.jwt.JwtTokenUtil;
 import com.zigix.todoitserver.domain.dto.AccessTokensResponse;
 import com.zigix.todoitserver.domain.dto.RegisterUserRequest;
-import com.zigix.todoitserver.domain.exception.EmailExistsException;
-import com.zigix.todoitserver.domain.exception.InvalidTokenException;
-import com.zigix.todoitserver.domain.exception.PasswordsDoesNotMatchException;
-import com.zigix.todoitserver.domain.exception.UsernameExistsException;
+import com.zigix.todoitserver.domain.exception.*;
 import com.zigix.todoitserver.domain.mapper.UserMapper;
 import com.zigix.todoitserver.domain.model.User;
 import com.zigix.todoitserver.domain.model.VerificationToken;
@@ -21,20 +18,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.validation.annotation.Validated;
 
 import javax.servlet.http.HttpServletRequest;
 
 @Service
 @RequiredArgsConstructor
-@Validated
 public class AuthServiceImpl implements AuthService {
     public static final String CONFIRMATION_TOKEN_LINK_PREFIX = "http://localhost:8080/api/v1/auth/verify?token=";
     public static final String CONFIRMATION_EMAIL_SUBJECT = "Confirm your account";
 
     public static final String BEARER_PREFIX = "Bearer ";
-
-
 
     private final UserRepository userRepository;
     private final MailService mailService;
@@ -75,10 +68,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void verifyToken(String tokenValue) {
+    public void verifyUserByToken(String tokenValue) {
         VerificationToken verificationToken =
                 verificationTokenService.getByTokenValue(tokenValue);
         User tokenOwner = verificationToken.getOwner();
+        if (tokenOwner.isEnabled()) {
+            throw new UserVerifiedException("User already verified");
+        }
         tokenOwner.setEnabled(true);
     }
 
@@ -93,18 +89,18 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AccessTokensResponse refreshToken(HttpServletRequest request) {
-            String refreshToken = getRefreshTokenFromRequest(request);
-            jwtTokenUtil.validateJwt(refreshToken);
-            if (!isRefreshToken(refreshToken)) {
-                throw new InvalidTokenException("Invalid token");
-            }
-            String username = jwtTokenUtil.getUsername(refreshToken);
+        String refreshToken = getRefreshTokenFromRequest(request);
+        jwtTokenUtil.validateJwt(refreshToken);
+        if (!jwtTokenUtil.getTokenType(refreshToken).equals(JwtTokenUtil.REFRESH_TOKEN_NAME)) {
+            throw new InvalidTokenTypeException("Invalid token type");
+        }
+        String username = jwtTokenUtil.getUsername(refreshToken);
 
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() ->
-                            new UsernameNotFoundException(String.format("User with name %s not found", username)));
-            String newAccessToken = jwtTokenUtil.generateAccessToken(user);
-            return new AccessTokensResponse(newAccessToken, refreshToken);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(String.format("User with name %s not found", username)));
+        String newAccessToken = jwtTokenUtil.generateAccessToken(user);
+        return new AccessTokensResponse(newAccessToken, refreshToken);
     }
 
     private String getRefreshTokenFromRequest(HttpServletRequest request) {
@@ -113,8 +109,5 @@ public class AuthServiceImpl implements AuthService {
             return header.substring(BEARER_PREFIX.length());
         }
         return "";
-    }
-    private boolean isRefreshToken(String token) {
-        return jwtTokenUtil.getTokenType(token).equals(JwtTokenUtil.REFRESH_TOKEN_NAME);
     }
 }

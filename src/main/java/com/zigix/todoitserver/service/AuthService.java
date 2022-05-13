@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 public interface AuthService {
     void signUp(RegisterUserRequest request);
 
-    void verifyToken(String tokenValue);
+    void verifyUserByToken(String tokenValue);
 
     User getLoggedUser();
 

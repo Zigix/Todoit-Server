@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 public class MailServiceImpl implements MailService {
     private final JavaMailSender mailSender;
 
-
     @Override
     public void sendMail(MailContent mailContent) {
         MimeMessagePreparator messagePreparator = mimeMessage -> {

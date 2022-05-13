@@ -17,6 +17,8 @@ import java.util.Date;
 public class JwtTokenUtil {
     public static final int ACCESS_TOKEN_EXPIRATION_TIME_DURATION = 10;
     public static final TemporalUnit ACCESS_TOKEN_EXPIRATION_TIME_UNIT = ChronoUnit.MINUTES;
+    public static final int REFRESH_TOKEN_EXPIRATION_TIME_DURATION = 1000;
+    public static final TemporalUnit REFRESH_TOKEN_EXPIRATION_TIME_UNIT = ChronoUnit.MINUTES;
     public static final String CLAIM_NAME_FOR_ROLES = "roles";
     public static final String CLAIM_NAME_FOR_TOKEN_TYPE = "tt";
     public static final String ACCESS_TOKEN_NAME = "access token";
@@ -42,24 +44,20 @@ public class JwtTokenUtil {
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withIssuedAt(Date.from(Instant.now()))
-                .withExpiresAt(Date.from(Instant.now().plus(10, ChronoUnit.MINUTES)))
+                .withExpiresAt(Date.from(Instant.now().plus(
+                        REFRESH_TOKEN_EXPIRATION_TIME_DURATION,
+                        REFRESH_TOKEN_EXPIRATION_TIME_UNIT)))
                 .withClaim(CLAIM_NAME_FOR_TOKEN_TYPE, REFRESH_TOKEN_NAME)
                 .sign(algorithm);
     }
 
-    public boolean validateJwt(String token) {
+    public void validateJwt(String token) {
         verifier.verify(token);
-        return true;
     }
 
-    public String getUsername(String accessToken) {
-        DecodedJWT decodedJWT = verifier.verify(accessToken);
+    public String getUsername(String token) {
+        DecodedJWT decodedJWT = verifier.verify(token);
         return decodedJWT.getSubject();
-    }
-
-    public String[] getRoles(String accessToken) {
-        DecodedJWT decodedJWT = verifier.verify(accessToken);
-        return decodedJWT.getClaim(CLAIM_NAME_FOR_ROLES).asArray(String.class);
     }
 
     public String getTokenType(String token) {
